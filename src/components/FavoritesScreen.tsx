@@ -1,4 +1,4 @@
-import { Heart, ChevronRight, RotateCcw } from 'lucide-react'
+import { Heart, ChevronRight } from 'lucide-react'
 import type { SwapResult } from '../types'
 
 interface FavoritesScreenProps {
@@ -43,7 +43,7 @@ export function FavoritesScreen({ favorites, onSelect, onToggleFavorite }: Favor
                       </div>
                     </div>
 
-                    <div style={{ flex: 1 }} onClick={() => onSelect(swap)} role="button" style={{ cursor: 'pointer', flex: 1 }}>
+                    <div onClick={() => onSelect(swap)} role="button" style={{ cursor: 'pointer', flex: 1 }}>
                       <p style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>{swap.swap.name}</p>
                       <p style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 1 }}>замість {swap.original.name}</p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>

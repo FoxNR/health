@@ -1,4 +1,4 @@
-import { Home, MessageCircle, Heart, User, Leaf } from 'lucide-react'
+import { Home, MessageCircle, Heart, User } from 'lucide-react'
 
 type Tab = 'home' | 'chat' | 'favorites' | 'profile'
 
