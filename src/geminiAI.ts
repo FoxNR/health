@@ -116,17 +116,24 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
     throw new Error('AI не повернув результату. Спробуйте інший запит.')
   }
 
-  // Extract JSON from response
-  const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) {
+  // Clean markdown if present
+  let cleanedText = text.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, '$1').trim()
+  
+  // Extract JSON from response (find first { and last })
+  const startIdx = cleanedText.indexOf('{')
+  const endIdx = cleanedText.lastIndexOf('}')
+  
+  if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
     console.error('Raw AI response:', text)
     throw new Error('AI повернув некоректну відповідь. Повторіть спробу.')
   }
 
+  const jsonStr = cleanedText.substring(startIdx, endIdx + 1)
+
   try {
-    return JSON.parse(jsonMatch[0]) as SwapAIResult
+    return JSON.parse(jsonStr) as SwapAIResult
   } catch (err) {
-    console.error('JSON Parse error:', err, 'Text:', jsonMatch[0])
+    console.error('JSON Parse error:', err, 'Final string:', jsonStr)
     throw new Error('Помилка обробки результату AI.')
   }
 }
