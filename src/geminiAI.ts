@@ -86,7 +86,7 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
       }
     ],
     generationConfig: {
-      temperature: 0.7,
+      temperature: 0.1,
       maxOutputTokens: 1024,
       response_mime_type: "application/json"
     }
@@ -117,10 +117,24 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
     throw new Error('AI не повернув результату. Спробуйте інший запит.')
   }
 
+  // Clean markdown if present (some models still return it despite MIME type)
+  let cleanedText = text.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, '$1').trim()
+  
+  // Extract JSON from response (find first { and last })
+  const startIdx = cleanedText.indexOf('{')
+  const endIdx = cleanedText.lastIndexOf('}')
+  
+  if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
+    console.error('Raw AI response error (No JSON found):', text)
+    throw new Error('AI повернув некоректну відповідь. Повторіть спробу.')
+  }
+
+  const jsonStr = cleanedText.substring(startIdx, endIdx + 1)
+
   try {
-    return JSON.parse(text) as SwapAIResult
+    return JSON.parse(jsonStr) as SwapAIResult
   } catch (err) {
-    console.error('JSON Parse error:', err, 'Raw text:', text)
+    console.error('JSON Parse error:', err, 'Final string:', jsonStr)
     throw new Error('Помилка обробки результату AI. Спробуйте ще раз.')
   }
 }
