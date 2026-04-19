@@ -134,9 +134,9 @@ export default function App() {
       setHistory(prev => [newSwap, ...prev])
       setCurrentSwap(newSwap)
       setScreen('result')
-    } catch (e) {
+    } catch (e: any) {
       console.error(e)
-      setErrorMsg('Не вдалося отримати відповідь від AI. Перевір підключення до інтернету.')
+      setErrorMsg(`AI Помилка: ${e.message || 'Невідома помилка'}`)
     } finally {
       setIsLoading(false)
     }

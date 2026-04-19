@@ -102,13 +102,33 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
   }
 
   const data = await res.json()
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+  
+  if (data.error) {
+    throw new Error(`Gemini Error: ${data.error.message}`)
+  }
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+  
+  if (!text) {
+    if (data.candidates?.[0]?.finishReason === 'SAFETY') {
+      throw new Error('Запит заблоковано фільтром безпеки AI.')
+    }
+    throw new Error('AI не повернув результату. Спробуйте інший запит.')
+  }
 
   // Extract JSON from response
   const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('No JSON in response')
+  if (!jsonMatch) {
+    console.error('Raw AI response:', text)
+    throw new Error('AI повернув некоректну відповідь. Повторіть спробу.')
+  }
 
-  return JSON.parse(jsonMatch[0]) as SwapAIResult
+  try {
+    return JSON.parse(jsonMatch[0]) as SwapAIResult
+  } catch (err) {
+    console.error('JSON Parse error:', err, 'Text:', jsonMatch[0])
+    throw new Error('Помилка обробки результату AI.')
+  }
 }
 
 export async function chatWithAI(
