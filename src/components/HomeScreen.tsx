@@ -84,32 +84,8 @@ export function HomeScreen({
           </button>
         </div>
 
-        {/* Search */}
-        <form onSubmit={handleSubmit}>
-          <div className="search-wrap" style={{ paddingLeft: 14, paddingRight: 8 }}>
-            <Search size={16} color="var(--text-muted)" />
-            <input
-              id="home-search-input"
-              type="text"
-              placeholder="Шукати заміну..."
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              style={{ paddingLeft: 8 }}
-            />
-            {query && (
-              <button
-                id="home-search-submit"
-                type="submit"
-                style={{ background: 'linear-gradient(135deg, #2ecc71, #27ae60)', color: 'white', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}
-              >
-                Swap ✨
-              </button>
-            )}
-          </div>
-        </form>
-
         {/* Goals Selector */}
-        <div style={{ marginTop: 16 }}>
+        <div style={{ marginBottom: 16 }}>
           <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ціль або Діагноз</p>
           <div className="scroll-area" style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
             {DIETARY_GOALS.map(goal => {
@@ -144,6 +120,30 @@ export function HomeScreen({
             })}
           </div>
         </div>
+
+        {/* Search */}
+        <form onSubmit={handleSubmit}>
+          <div className="search-wrap" style={{ paddingLeft: 14, paddingRight: 8 }}>
+            <Search size={16} color="var(--text-muted)" />
+            <input
+              id="home-search-input"
+              type="text"
+              placeholder="Шукати заміну..."
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              style={{ paddingLeft: 8 }}
+            />
+            {query && (
+              <button
+                id="home-search-submit"
+                type="submit"
+                style={{ background: 'linear-gradient(135deg, #2ecc71, #27ae60)', color: 'white', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}
+              >
+                Swap ✨
+              </button>
+            )}
+          </div>
+        </form>
       </div>
 
       {/* Content */}

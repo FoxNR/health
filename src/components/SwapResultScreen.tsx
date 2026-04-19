@@ -4,6 +4,7 @@ import type { SwapResult } from '../types'
 
 interface SwapResultScreenProps {
   swap: SwapResult
+  selectedGoals: string[]
   onBack: () => void
   onToggleFavorite: (id: string) => void
 }
@@ -67,7 +68,7 @@ function ProgressRing({ value, max, color }: { value: number; max: number; color
   )
 }
 
-export function SwapResultScreen({ swap, onBack, onToggleFavorite }: SwapResultScreenProps) {
+export function SwapResultScreen({ swap, selectedGoals, onBack, onToggleFavorite }: SwapResultScreenProps) {
   const [copied, setCopied] = useState(false)
 
   const calDiff = swap.swap.macros.calories - swap.original.macros.calories
@@ -184,6 +185,15 @@ export function SwapResultScreen({ swap, onBack, onToggleFavorite }: SwapResultS
             </div>
             <div>
               <p style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>Аналіз</p>
+              {selectedGoals.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                  {selectedGoals.map(g => (
+                    <span key={g} style={{ fontSize: 9, fontWeight: 700, background: 'var(--green-bg)', color: 'var(--green-primary)', padding: '2px 8px', borderRadius: 6, textTransform: 'uppercase' }}>
+                      {g}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.6 }}>{swap.aiReason}</p>

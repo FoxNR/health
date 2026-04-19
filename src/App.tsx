@@ -172,6 +172,7 @@ export default function App() {
       <>
         <SwapResultScreen
           swap={currentSwap}
+          selectedGoals={selectedGoals}
           onBack={() => setScreen('app')}
           onToggleFavorite={handleToggleFavorite}
         />
