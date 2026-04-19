@@ -41,26 +41,26 @@ const SYSTEM_PROMPT = `Ти — MealSwap AI, експертний помічни
    - **Підвищений холестерин**: Жодних трансжирів та насичених тваринних жирів. Пріоритет — омега-3, клітковина, рослинні білки.
    - **Правильне харчування**: Загальний баланс КБЖВ, цільні продукти.
 
-Відповідай ТІЛЬКИ JSON у такому форматі без жодного тексту до або після:
+Відповідай ТІЛЬКИ JSON. Не додавай ніяких пояснень до або після JSON. Формат:
 {
-  "originalName": "назва оригінальної страви",
-  "originalEmoji": "відповідний емодзі",
+  "originalName": "назва",
+  "originalEmoji": "emoji",
   "originalCalories": число,
-  "originalProtein": число в г,
-  "originalFat": число в г,
-  "originalCarbs": число в г,
-  "originalFiber": число в г,
-  "originalServing": "100г" або "1 порція",
-  "swapName": "назва заміни",
-  "swapEmoji": "відповідний емодзі",
+  "originalProtein": число,
+  "originalFat": число,
+  "originalCarbs": число,
+  "originalFiber": число,
+  "originalServing": "100г",
+  "swapName": "заміна",
+  "swapEmoji": "emoji",
   "swapCalories": число,
-  "swapProtein": число в г,
-  "swapFat": число в г,
-  "swapCarbs": число в г,
-  "swapFiber": число в г,
-  "swapServing": "100г" або "1 порція",
-  "aiReason": "Поясни, чому ця заміна найкраща САМЕ з огляду на вибрані діагнози (2-3 речення).",
-  "caloriesDiff": число (від'ємне якщо заміна менш калорійна)
+  "swapProtein": число,
+  "swapFat": число,
+  "swapCarbs": число,
+  "swapFiber": число,
+  "swapServing": "100г",
+  "aiReason": "Чому це краще для діагнозів",
+  "caloriesDiff": число
 }
 
 Будь дуже відповідальним. Якщо страва КАТЕГОРИЧНО заборонена при діагнозі (наприклад, свинячий шашлик при панкреатиті), обов'язково запропонуй максимально безпечну дієтичну альтернативу (наприклад, запечена індичка).`
@@ -124,8 +124,9 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
   const endIdx = cleanedText.lastIndexOf('}')
   
   if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
-    console.error('Raw AI response:', text)
-    throw new Error('AI повернув некоректну відповідь. Повторіть спробу.')
+    console.error('Raw AI response error:', text)
+    console.log('Cleaned text was:', cleanedText)
+    throw new Error('AI повернув некоректну відповідь (JSON не знайдено). Повторіть спробу.')
   }
 
   const jsonStr = cleanedText.substring(startIdx, endIdx + 1)
