@@ -74,7 +74,7 @@ export function HomeScreen({
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <p style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 1 }}>Привіт, <span style={{ color: 'var(--green-primary)', fontWeight: 700 }}>{userName}</span></p>
-                <span style={{ fontSize: 10, fontWeight: 800, background: 'var(--green-primary)', color: 'white', padding: '1px 6px', borderRadius: 6, textTransform: 'uppercase' }}>V3</span>
+                <span style={{ fontSize: 10, fontWeight: 800, background: 'var(--green-primary)', color: 'white', padding: '1px 6px', borderRadius: 6, textTransform: 'uppercase' }}>V4</span>
               </div>
               <p style={{ color: 'var(--text-primary)', fontSize: 16, fontWeight: 700, fontFamily: 'Outfit, sans-serif' }}>Що замінимо сьогодні?</p>
             </div>
