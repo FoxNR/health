@@ -96,13 +96,13 @@ export default function App() {
   const favorites = history.filter(h => h.isFavorite)
   const swapsToday = 3
 
-  const handleSearch = async (query: string) => {
+  const performAISearch = async (query: string, customNote?: string) => {
     setIsLoading(true)
-    setLoadingQuery(query)
+    setLoadingQuery(customNote ? `${query} (${customNote})` : query)
     setErrorMsg(null)
 
     try {
-      const aiResult = await getAiSwap(query, selectedGoals)
+      const aiResult = await getAiSwap(query, selectedGoals, customNote)
 
       const newSwap: SwapResult = {
         id: `swap-${Date.now()}`,
@@ -156,6 +156,14 @@ export default function App() {
     }
   }
 
+  const handleSearch = (query: string) => performAISearch(query)
+
+  const handleRegenerateSwap = (customNote?: string) => {
+    if (currentSwap) {
+      performAISearch(currentSwap.query, customNote)
+    }
+  }
+
   const handleSelectSwap = (swap: SwapResult) => {
     setCurrentSwap(swap)
     setScreen('result')
@@ -189,6 +197,8 @@ export default function App() {
           selectedGoals={selectedGoals}
           onBack={() => setScreen('app')}
           onToggleFavorite={handleToggleFavorite}
+          onRegenerate={handleRegenerateSwap}
+          isLoading={isLoading}
         />
         <BottomNav activeTab={activeTab} onTabChange={tab => { setActiveTab(tab); setScreen('app') }} />
       </>

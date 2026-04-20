@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, Heart, Share2, RotateCcw, Check, TrendingDown, TrendingUp, Brain } from 'lucide-react'
+import { ChevronLeft, Heart, Share2, RotateCcw, Check, TrendingDown, TrendingUp, Brain, Sparkles, Send } from 'lucide-react'
 import type { SwapResult } from '../types'
 
 interface SwapResultScreenProps {
@@ -7,6 +7,8 @@ interface SwapResultScreenProps {
   selectedGoals: string[]
   onBack: () => void
   onToggleFavorite: (id: string) => void
+  onRegenerate: (customNote?: string) => void
+  isLoading: boolean
 }
 
 interface NutrientRowProps {
@@ -68,8 +70,9 @@ function ProgressRing({ value, max, color }: { value: number; max: number; color
   )
 }
 
-export function SwapResultScreen({ swap, selectedGoals, onBack, onToggleFavorite }: SwapResultScreenProps) {
+export function SwapResultScreen({ swap, selectedGoals, onBack, onToggleFavorite, onRegenerate, isLoading }: SwapResultScreenProps) {
   const [copied, setCopied] = useState(false)
+  const [customReq, setCustomReq] = useState('')
 
   const calDiff = swap.swap.macros.calories - swap.original.macros.calories
   const calPct = swap.original.macros.calories > 0
@@ -221,6 +224,103 @@ export function SwapResultScreen({ swap, selectedGoals, onBack, onToggleFavorite
           {swap.swap.macros.fiber !== undefined && (
             <NutrientRow label="Клітковина" original={swap.original.macros.fiber ?? 0} swapped={swap.swap.macros.fiber} unit="г" higherIsBetter />
           )}
+        </div>
+
+        {/* Regenerate Actions */}
+        <div style={{ display: 'flex', gap: 10, marginBottom: 4 }}>
+          {/* Another Alternative Button */}
+          <button
+            onClick={() => onRegenerate()}
+            disabled={isLoading}
+            style={{
+              flex: 1,
+              height: 52,
+              borderRadius: 14,
+              background: 'white',
+              border: '1px solid var(--border)',
+              color: 'var(--green-primary)',
+              fontWeight: 700,
+              fontSize: 13,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              boxShadow: 'var(--shadow-card)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            className="hover-lift"
+          >
+            <RotateCcw size={16} />
+            ІНША АЛЬТЕРНАТИВА
+          </button>
+
+          {/* Custom Request Input */}
+          <div style={{
+            flex: 1,
+            height: 52,
+            background: 'white',
+            borderRadius: 14,
+            border: '1.5px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 12px',
+            gap: 8,
+            boxShadow: 'var(--shadow-card)',
+            transition: 'all 0.2s ease',
+            position: 'relative'
+          }}
+          className="focus-within:border-green-primary"
+          >
+            <Sparkles size={16} color="var(--green-primary)" />
+            <input
+              type="text"
+              placeholder="Запропонувати заміну"
+              value={customReq}
+              onChange={(e) => setCustomReq(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && customReq.trim()) {
+                  onRegenerate(customReq)
+                  setCustomReq('')
+                }
+              }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                fontSize: 12,
+                color: 'var(--text-primary)',
+                width: '100%',
+                paddingRight: '32px'
+              }}
+            />
+            <button
+              onClick={() => {
+                if (customReq.trim()) {
+                  onRegenerate(customReq)
+                  setCustomReq('')
+                }
+              }}
+              disabled={!customReq.trim() || isLoading}
+              style={{
+                position: 'absolute',
+                right: 8,
+                width: 32,
+                height: 32,
+                borderRadius: 10,
+                background: customReq.trim() ? 'var(--green-primary)' : 'var(--surface-2)',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: customReq.trim() ? 'pointer' : 'default',
+                color: 'white',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Send size={14} />
+            </button>
+          </div>
         </div>
 
         {/* Actions (like "Book Now" button in DoctApp) */}
