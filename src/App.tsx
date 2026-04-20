@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { SwapResult } from './types'
 import { MOCK_HISTORY } from './mockData'
 import { getAiSwap } from './geminiAI'
+import { loadState, saveState } from './utils/storage'
 
 import { LoginScreen } from './components/LoginScreen'
 import { HomeScreen } from './components/HomeScreen'
@@ -70,14 +71,27 @@ function ProfileScreen() {
 }
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>('login')
-  const [activeTab, setActiveTab] = useState<Tab>('home')
-  const [history, setHistory] = useState<SwapResult[]>(MOCK_HISTORY)
+  // Load persisted state
+  const persistedState = loadState()
+
+  const [screen, setScreen] = useState<Screen>((persistedState?.screen as Screen) || 'login')
+  const [activeTab, setActiveTab] = useState<Tab>((persistedState?.activeTab as Tab) || 'home')
+  const [history, setHistory] = useState<SwapResult[]>(persistedState?.history || MOCK_HISTORY)
   const [currentSwap, setCurrentSwap] = useState<SwapResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [loadingQuery, setLoadingQuery] = useState('')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([])
+  const [selectedGoals, setSelectedGoals] = useState<string[]>(persistedState?.selectedGoals || [])
+
+  // Persist state on changes
+  useEffect(() => {
+    saveState({
+      history,
+      selectedGoals,
+      activeTab,
+      screen
+    })
+  }, [history, selectedGoals, activeTab, screen])
 
   const favorites = history.filter(h => h.isFavorite)
   const swapsToday = 3
