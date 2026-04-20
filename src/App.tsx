@@ -28,9 +28,9 @@ function LoadingOverlay({ query, isRegenerating }: LoadingOverlayProps) {
       </div>
       <div style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
-          {isRegenerating && <Sparkles size={20} color="var(--green-primary)" />}
+          <Sparkles size={20} color="var(--green-primary)" />
           <p style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 20, color: 'var(--text-primary)', margin: 0 }}>
-            {isRegenerating ? 'Підбір заміни' : 'AI шукає заміну…'}
+            AI шукає заміну…
           </p>
         </div>
         <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 260, lineHeight: 1.5, margin: '0 auto' }}>«{query}»</p>

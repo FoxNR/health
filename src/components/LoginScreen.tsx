@@ -28,7 +28,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         <div className="text-center">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
             <h1 className="font-display font-black text-white" style={{ fontSize: 32, letterSpacing: -0.5 }}>MealSwap</h1>
-            <span style={{ fontSize: 12, fontWeight: 900, color: '#2ecc71', background: 'white', padding: '2px 8px', borderRadius: 8, transform: 'rotate(5deg)' }}>V6.8</span>
+            <span style={{ fontSize: 12, fontWeight: 900, color: '#2ecc71', background: 'white', padding: '2px 8px', borderRadius: 8, transform: 'rotate(5deg)' }}>V6.9</span>
           </div>
           <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 }}>AI · Їжа · Здоров'я</p>
         </div>
