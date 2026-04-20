@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import type { SwapResult } from './types'
 import { MOCK_HISTORY } from './mockData'
 import { getAiSwap } from './geminiAI'
+import { Sparkles } from 'lucide-react'
 import { loadState, saveState } from './utils/storage'
 
 import { LoginScreen } from './components/LoginScreen'
@@ -16,17 +17,23 @@ type Screen = 'login' | 'app' | 'result' | 'chat-full'
 
 interface LoadingOverlayProps {
   query: string
+  isRegenerating?: boolean
 }
 
-function LoadingOverlay({ query }: LoadingOverlayProps) {
+function LoadingOverlay({ query, isRegenerating }: LoadingOverlayProps) {
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)', zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24, padding: 32 }}>
       <div style={{ width: 80, height: 80, borderRadius: 24, background: 'linear-gradient(135deg, #2ecc71, #27ae60)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, animation: 'bounce-soft 1.5s ease-in-out infinite' }}>
         🤖
       </div>
       <div style={{ textAlign: 'center' }}>
-        <p style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 20, color: 'var(--text-primary)', marginBottom: 8 }}>AI шукає заміну…</p>
-        <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 260, lineHeight: 1.5 }}>«{query}»</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
+          {isRegenerating && <Sparkles size={20} color="var(--green-primary)" />}
+          <p style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 20, color: 'var(--text-primary)', margin: 0 }}>
+            {isRegenerating ? 'Підбір заміни' : 'AI шукає заміну…'}
+          </p>
+        </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 260, lineHeight: 1.5, margin: '0 auto' }}>«{query}»</p>
       </div>
 
       {/* Animated dots */}
@@ -79,6 +86,7 @@ export default function App() {
   const [history, setHistory] = useState<SwapResult[]>(persistedState?.history || MOCK_HISTORY)
   const [currentSwap, setCurrentSwap] = useState<SwapResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isRegenerating, setIsRegenerating] = useState(false)
   const [loadingQuery, setLoadingQuery] = useState('')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [selectedGoals, setSelectedGoals] = useState<string[]>(persistedState?.selectedGoals || [])
@@ -98,6 +106,7 @@ export default function App() {
 
   const performAISearch = async (query: string, customNote?: string, isRegenerate?: boolean) => {
     setIsLoading(true)
+    setIsRegenerating(!!isRegenerate)
     setLoadingQuery(customNote ? `${query} (${customNote})` : query)
     setErrorMsg(null)
 
@@ -156,6 +165,7 @@ export default function App() {
       setErrorMsg(`AI Помилка: ${e.message || 'Невідома помилка'}`)
     } finally {
       setIsLoading(false)
+      setIsRegenerating(false)
     }
   }
 
@@ -214,7 +224,7 @@ export default function App() {
   // Main app with tabs
   return (
     <div style={{ position: 'relative' }}>
-      {isLoading && <LoadingOverlay query={loadingQuery} />}
+      {isLoading && <LoadingOverlay query={loadingQuery} isRegenerating={isRegenerating} />}
 
       {/* Error toast */}
       {errorMsg && (
