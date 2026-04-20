@@ -41,7 +41,7 @@ const SYSTEM_PROMPT = `Ти — MealSwap AI, експертний помічни
    - **Підвищений холестерин**: Жодних трансжирів та насичених тваринних жирів. Пріоритет — омега-3, клітковина, рослинні білки.
    - **Правильне харчування**: Загальний баланс КБЖВ, цільні продукти.
 
-Відповідай ТІЛЬКИ JSON. Не додавай ніяких пояснень до або після JSON. Формат:
+Return ONLY raw JSON. No conversational text, no explanations. Format:
 {
   "originalName": "назва",
   "originalEmoji": "emoji",
@@ -63,7 +63,7 @@ const SYSTEM_PROMPT = `Ти — MealSwap AI, експертний помічни
   "caloriesDiff": число
 }
 
-Будь дуже відповідальним. Якщо страва КАТЕГОРИЧНО заборонена при діагнозі (наприклад, свинячий шашлик при панкреатиті), обов'язково запропонуй максимально безпечну дієтичну альтернативу (наприклад, запечена індичка).`
+Будь дуже відповідальним. Якщо страва КАТЕГОРИЧНО заборонена при діагнозі (наприклад, свинячий шашлик при панкреатиті), обов'язково запропонуй максимально безпечну дієтичну альтернативу.`
 
 export async function getAiSwap(query: string, goals: string[] = []): Promise<SwapAIResult> {
   const queryText = goals.length > 0
@@ -89,7 +89,13 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
       temperature: 0.1,
       maxOutputTokens: 1024,
       response_mime_type: "application/json"
-    }
+    },
+    safetySettings: [
+      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+    ]
   }
 
   const res = await fetch(GEMINI_URL, {
@@ -117,25 +123,37 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
     throw new Error('AI не повернув результату. Спробуйте інший запит.')
   }
 
-  // Clean markdown if present (some models still return it despite MIME type)
-  let cleanedText = text.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, '$1').trim()
+  // Robust extraction and parsing
+  let cleanedText = text.trim()
   
-  // Extract JSON from response (find first { and last })
-  const startIdx = cleanedText.indexOf('{')
-  const endIdx = cleanedText.lastIndexOf('}')
+  // Remove markdown code blocks if present
+  cleanedText = cleanedText.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, '$1').trim()
   
-  if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
-    console.error('Raw AI response error (No JSON found):', text)
-    throw new Error('AI повернув некоректну відповідь. Повторіть спробу.')
+  // Find the actual JSON object boundaries
+  const firstBrace = cleanedText.indexOf('{')
+  const lastBrace = cleanedText.lastIndexOf('}')
+  
+  if (firstBrace === -1 || lastBrace === -1) {
+    console.error('CRITICAL: AI response missing JSON structure. Raw text:', text)
+    throw new Error('AI повернув некоректну відповідь (немає JSON). Повторіть спробу.')
   }
 
-  const jsonStr = cleanedText.substring(startIdx, endIdx + 1)
+  const jsonContent = cleanedText.substring(firstBrace, lastBrace + 1)
 
   try {
-    return JSON.parse(jsonStr) as SwapAIResult
+    const parsed = JSON.parse(jsonContent)
+    
+    // Basic verification that it's a SwapAIResult
+    if (!parsed.originalName || !parsed.swapName) {
+      throw new Error('Отримано пустий або неповний результат від AI.')
+    }
+    
+    return parsed as SwapAIResult
   } catch (err) {
-    console.error('JSON Parse error:', err, 'Final string:', jsonStr)
-    throw new Error('Помилка обробки результату AI. Спробуйте ще раз.')
+    console.error('CRITICAL: JSON Parse failed. Error:', err)
+    console.error('Raw problematic text:', text)
+    console.error('Extraction attempt:', jsonContent)
+    throw new Error('AI повернув некоректну відповідь. Повторіть спробу.')
   }
 }
 

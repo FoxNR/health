@@ -203,10 +203,26 @@ export default function App() {
       {/* Error toast */}
       {errorMsg && (
         <div
-          style={{ position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)', background: '#e74c3c', color: 'white', padding: '12px 20px', borderRadius: 14, fontSize: 13, fontWeight: 500, zIndex: 300, maxWidth: 320, textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', cursor: 'pointer' }}
-          onClick={() => setErrorMsg(null)}
+          style={{ position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)', background: '#e74c3c', color: 'white', padding: '16px 20px', borderRadius: 18, fontSize: 13, fontWeight: 500, zIndex: 300, maxWidth: 340, boxShadow: '0 8px 32px rgba(231, 76, 60, 0.3)', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}
         >
-          ❌ {errorMsg}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>❌ {errorMsg}</span>
+            <button 
+              onClick={() => setErrorMsg(null)}
+              style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer', fontSize: 10 }}
+            >
+              ✕
+            </button>
+          </div>
+          
+          {loadingQuery && (
+            <button
+              onClick={() => handleSearch(loadingQuery)}
+              style={{ background: 'white', color: '#e74c3c', border: 'none', borderRadius: 10, padding: '8px 16px', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              🔄 Спробувати ще раз
+            </button>
+          )}
         </div>
       )}
 
