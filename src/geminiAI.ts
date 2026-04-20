@@ -89,10 +89,10 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
       response_mime_type: "application/json"
     },
     safetySettings: [
-      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
-      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
-      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
-      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
     ]
   }
 
@@ -121,16 +121,15 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
     throw new Error('AI не повернув результату. Спробуйте інший запит.')
   }
 
-  // Response Sanitization: extract content between first { and last }
-  const firstBrace = text.indexOf('{')
-  const lastBrace = text.lastIndexOf('}')
+  // Regex Extraction: find the JSON object within the text
+  const match = text.match(/\{[\s\S]*\}/)
   
-  if (firstBrace === -1 || lastBrace === -1) {
-    console.log('Raw AI Response:', text)
+  if (!match) {
+    console.error('FULL_RAW_RESPONSE:', text)
     throw new Error('AI повернув некоректну відповідь (немає JSON). Повторіть спробу.')
   }
 
-  const jsonContent = text.substring(firstBrace, lastBrace + 1)
+  const jsonContent = match[0]
 
   try {
     const parsed = JSON.parse(jsonContent)
@@ -141,7 +140,7 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
     
     return parsed as SwapAIResult
   } catch (err) {
-    console.log('Raw AI Response:', text)
+    console.error('FULL_RAW_RESPONSE:', text)
     throw new Error('AI повернув некоректну відповідь. Повторіть спробу.')
   }
 }
