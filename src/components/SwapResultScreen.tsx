@@ -275,7 +275,7 @@ export function SwapResultScreen({ swap, selectedGoals, onBack, onToggleFavorite
             <Sparkles size={16} color="var(--green-primary)" />
             <input
               type="text"
-              placeholder="Запропонувати заміну"
+              placeholder="Я бажаю..."
               value={customReq}
               onChange={(e) => setCustomReq(e.target.value)}
               onKeyDown={(e) => {

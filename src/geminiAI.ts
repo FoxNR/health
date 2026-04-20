@@ -70,10 +70,14 @@ const SYSTEM_PROMPT = `You are a headless API agent. Respond ONLY with valid JSO
 
 FORMAT: Use the provided JSON Schema.`
 
-export async function getAiSwap(query: string, goals: string[] = [], customNote?: string): Promise<SwapAIResult> {
-  const baseQuery = goals.length > 0
+export async function getAiSwap(query: string, goals: string[] = [], customNote?: string, isRegenerate?: boolean): Promise<SwapAIResult> {
+  let baseQuery = goals.length > 0
     ? `Знайди здорову заміну для: ${query}. Користувач має такі цілі/діагнози: ${goals.join(', ')}. Враховуй це при підборі.`
     : `Знайди здорову заміну: ${query}`
+
+  if (isRegenerate) {
+    baseQuery = `Знайди НОВУ ТА ІНШУ (відмінну від попередньої) здорову заміну для: ${query}. Вона має бути сюрпризом для користувача.`
+  }
 
   const queryText = customNote
     ? `${baseQuery} \n\n КРИТИЧНО - ВРАХУЙ ТАКОЖ ЦЕЙ СПЕЦИФІЧНИЙ ЗАПИТ ВІД КОРИСТУВАЧА: "${customNote}". Заміна має відповідати цим вимогам.`

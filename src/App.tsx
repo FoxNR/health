@@ -96,13 +96,13 @@ export default function App() {
   const favorites = history.filter(h => h.isFavorite)
   const swapsToday = 3
 
-  const performAISearch = async (query: string, customNote?: string) => {
+  const performAISearch = async (query: string, customNote?: string, isRegenerate?: boolean) => {
     setIsLoading(true)
     setLoadingQuery(customNote ? `${query} (${customNote})` : query)
     setErrorMsg(null)
 
     try {
-      const aiResult = await getAiSwap(query, selectedGoals, customNote)
+      const aiResult = await getAiSwap(query, selectedGoals, customNote, isRegenerate)
 
       const newSwap: SwapResult = {
         id: `swap-${Date.now()}`,
@@ -148,6 +148,9 @@ export default function App() {
       setHistory(prev => [newSwap, ...prev])
       setCurrentSwap(newSwap)
       setScreen('result')
+      
+      // Scroll to top on new result
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (e: any) {
       console.error(e)
       setErrorMsg(`AI Помилка: ${e.message || 'Невідома помилка'}`)
@@ -160,7 +163,7 @@ export default function App() {
 
   const handleRegenerateSwap = (customNote?: string) => {
     if (currentSwap) {
-      performAISearch(currentSwap.query, customNote)
+      performAISearch(currentSwap.query, customNote, true)
     }
   }
 
