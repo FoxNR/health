@@ -247,6 +247,8 @@ export function SwapResultScreen({ swap, selectedGoals, onBack, onToggleFavorite
               gap: 8,
               boxShadow: 'var(--shadow-card)',
               cursor: 'pointer',
+              pointerEvents: 'auto',
+              zIndex: 10,
               transition: 'all 0.2s ease'
             }}
             className="hover-lift"
@@ -268,7 +270,8 @@ export function SwapResultScreen({ swap, selectedGoals, onBack, onToggleFavorite
             gap: 8,
             boxShadow: 'var(--shadow-card)',
             transition: 'all 0.2s ease',
-            position: 'relative'
+            position: 'relative',
+            pointerEvents: 'auto'
           }}
           className="focus-within:border-green-primary"
           >

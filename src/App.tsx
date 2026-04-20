@@ -162,8 +162,11 @@ export default function App() {
   const handleSearch = (query: string) => performAISearch(query)
 
   const handleRegenerateSwap = (customNote?: string) => {
+    console.log("MealSwap: handleRegenerateSwap called with note:", customNote);
     if (currentSwap) {
       performAISearch(currentSwap.query, customNote, true)
+    } else {
+      console.warn("MealSwap: handleRegenerateSwap called but currentSwap is null");
     }
   }
 
