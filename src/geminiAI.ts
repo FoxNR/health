@@ -29,11 +29,11 @@ export interface ChatMessage {
   text: string
 }
 
-const SYSTEM_PROMPT = `Ти — MealSwap AI, експертний помічник з лікувального та здорового харчування. Ти допомагаєш людям знаходити безпечні та здорові заміни для страв, враховуючи їхні медичні цілі та діагнози.
+const SYSTEM_PROMPT = `You are a headless API agent. Respond ONLY with valid JSON. Never include explanations, markdown code blocks (like \`\`\`json), or any text outside the JSON object.
 
-Коли тебе просять знайти заміну (swap) страві:
-1. Аналізуй склад оригінальної страви.
-2. Враховуй вибрані "Цілі або Діагнози":
+Ти — MealSwap AI, експертний помічник з лікувального та здорового харчування. Ти допомагаєш людям знаходити безпечні та здорові заміни для страв, враховуючи їхні медичні цілі та діагнози.
+
+Коли тебе просять знайти заміну (swap) страві, враховуй вибрані "Цілі або Діагнози":
    - **Зменшення ваги**: Обирай максимально низькокалорійні варіанти з високим вмістом клітковини.
    - **Лікування шлунку**: Тільки легкозасвоювана їжа. Жодного гострого, надто кислого або грубого.
    - **Лікування нирок**: Обмежуй продукти з високим вмістом пуринів, солі та надлишкового білка (якщо не вказано інше).
@@ -41,7 +41,7 @@ const SYSTEM_PROMPT = `Ти — MealSwap AI, експертний помічни
    - **Підвищений холестерин**: Жодних трансжирів та насичених тваринних жирів. Пріоритет — омега-3, клітковина, рослинні білки.
    - **Правильне харчування**: Загальний баланс КБЖВ, цільні продукти.
 
-Return ONLY raw JSON. No conversational text, no explanations. Format:
+FORMAT:
 {
   "originalName": "назва",
   "originalEmoji": "emoji",
@@ -61,9 +61,7 @@ Return ONLY raw JSON. No conversational text, no explanations. Format:
   "swapServing": "100г",
   "aiReason": "Чому це краще для діагнозів",
   "caloriesDiff": число
-}
-
-Будь дуже відповідальним. Якщо страва КАТЕГОРИЧНО заборонена при діагнозі (наприклад, свинячий шашлик при панкреатиті), обов'язково запропонуй максимально безпечну дієтичну альтернативу.`
+}`
 
 export async function getAiSwap(query: string, goals: string[] = []): Promise<SwapAIResult> {
   const queryText = goals.length > 0
@@ -123,36 +121,27 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
     throw new Error('AI не повернув результату. Спробуйте інший запит.')
   }
 
-  // Robust extraction and parsing
-  let cleanedText = text.trim()
-  
-  // Remove markdown code blocks if present
-  cleanedText = cleanedText.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, '$1').trim()
-  
-  // Find the actual JSON object boundaries
-  const firstBrace = cleanedText.indexOf('{')
-  const lastBrace = cleanedText.lastIndexOf('}')
+  // Response Sanitization: extract content between first { and last }
+  const firstBrace = text.indexOf('{')
+  const lastBrace = text.lastIndexOf('}')
   
   if (firstBrace === -1 || lastBrace === -1) {
-    console.error('CRITICAL: AI response missing JSON structure. Raw text:', text)
+    console.log('Raw AI Response:', text)
     throw new Error('AI повернув некоректну відповідь (немає JSON). Повторіть спробу.')
   }
 
-  const jsonContent = cleanedText.substring(firstBrace, lastBrace + 1)
+  const jsonContent = text.substring(firstBrace, lastBrace + 1)
 
   try {
     const parsed = JSON.parse(jsonContent)
     
-    // Basic verification that it's a SwapAIResult
     if (!parsed.originalName || !parsed.swapName) {
       throw new Error('Отримано пустий або неповний результат від AI.')
     }
     
     return parsed as SwapAIResult
   } catch (err) {
-    console.error('CRITICAL: JSON Parse failed. Error:', err)
-    console.error('Raw problematic text:', text)
-    console.error('Extraction attempt:', jsonContent)
+    console.log('Raw AI Response:', text)
     throw new Error('AI повернув некоректну відповідь. Повторіть спробу.')
   }
 }
