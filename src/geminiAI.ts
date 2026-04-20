@@ -29,6 +29,31 @@ export interface ChatMessage {
   text: string
 }
 
+const SWAP_RESPONSE_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    originalName: { type: "STRING" },
+    originalEmoji: { type: "STRING" },
+    originalCalories: { type: "NUMBER" },
+    originalProtein: { type: "NUMBER" },
+    originalFat: { type: "NUMBER" },
+    originalCarbs: { type: "NUMBER" },
+    originalFiber: { type: "NUMBER" },
+    originalServing: { type: "STRING" },
+    swapName: { type: "STRING" },
+    swapEmoji: { type: "STRING" },
+    swapCalories: { type: "NUMBER" },
+    swapProtein: { type: "NUMBER" },
+    swapFat: { type: "NUMBER" },
+    swapCarbs: { type: "NUMBER" },
+    swapFiber: { type: "NUMBER" },
+    swapServing: { type: "STRING" },
+    aiReason: { type: "STRING" },
+    caloriesDiff: { type: "NUMBER" }
+  },
+  required: ["originalName", "swapName", "aiReason"]
+}
+
 const SYSTEM_PROMPT = `You are a headless API agent. Respond ONLY with valid JSON. Never include explanations, markdown code blocks (like \`\`\`json), or any text outside the JSON object.
 
 Ти — MealSwap AI, експертний помічник з лікувального та здорового харчування. Ти допомагаєш людям знаходити безпечні та здорові заміни для страв, враховуючи їхні медичні цілі та діагнози.
@@ -41,27 +66,7 @@ const SYSTEM_PROMPT = `You are a headless API agent. Respond ONLY with valid JSO
    - **Підвищений холестерин**: Жодних трансжирів та насичених тваринних жирів. Пріоритет — омега-3, клітковина, рослинні білки.
    - **Правильне харчування**: Загальний баланс КБЖВ, цільні продукти.
 
-FORMAT:
-{
-  "originalName": "назва",
-  "originalEmoji": "emoji",
-  "originalCalories": число,
-  "originalProtein": число,
-  "originalFat": число,
-  "originalCarbs": число,
-  "originalFiber": число,
-  "originalServing": "100г",
-  "swapName": "заміна",
-  "swapEmoji": "emoji",
-  "swapCalories": число,
-  "swapProtein": число,
-  "swapFat": число,
-  "swapCarbs": число,
-  "swapFiber": число,
-  "swapServing": "100г",
-  "aiReason": "Чому це краще для діагнозів",
-  "caloriesDiff": число
-}`
+FORMAT: Use the provided JSON Schema.`
 
 export async function getAiSwap(query: string, goals: string[] = []): Promise<SwapAIResult> {
   const queryText = goals.length > 0
@@ -85,8 +90,9 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
     ],
     generationConfig: {
       temperature: 0.1,
-      maxOutputTokens: 1024,
-      response_mime_type: "application/json"
+      maxOutputTokens: 2048,
+      response_mime_type: "application/json",
+      response_schema: SWAP_RESPONSE_SCHEMA
     },
     safetySettings: [
       { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
@@ -121,15 +127,28 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
     throw new Error('AI не повернув результату. Спробуйте інший запит.')
   }
 
-  // Regex Extraction: find the JSON object within the text
-  const match = text.match(/\{[\s\S]*\}/)
-  
-  if (!match) {
+  // JSON Extraction & Smart Repair
+  let match = text.match(/\{[\s\S]*\}/)
+  let jsonContent = match ? match[0] : null
+
+  if (!jsonContent && text.includes('{')) {
+    // Attempt repair for truncated response
+    const start = text.indexOf('{')
+    let partial = text.substring(start)
+    // Add missing braces/quotes (basic heuristic)
+    if (!partial.endsWith('}')) {
+      if (partial.includes('"') && (partial.split('"').length % 2 === 0)) {
+        partial += '"'
+      }
+      partial += '}'
+    }
+    jsonContent = partial
+  }
+
+  if (!jsonContent) {
     console.error('FULL_RAW_RESPONSE:', text)
     throw new Error('AI повернув некоректну відповідь (немає JSON). Повторіть спробу.')
   }
-
-  const jsonContent = match[0]
 
   try {
     const parsed = JSON.parse(jsonContent)
@@ -141,7 +160,7 @@ export async function getAiSwap(query: string, goals: string[] = []): Promise<Sw
     return parsed as SwapAIResult
   } catch (err) {
     console.error('FULL_RAW_RESPONSE:', text)
-    throw new Error('AI повернув некоректну відповідь. Повторіть спробу.')
+    throw new Error('AI повернув некоректну відповідь (помилка структури). Повторіть спробу.')
   }
 }
 
